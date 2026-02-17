@@ -4,14 +4,17 @@ import fetch from "node-fetch";
 const app = express();
 app.use(express.json());
 
-const DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1398249449641214123/bRgmSFR6BeayxSM1_rutnelv_nLcaA1_ssQYjIkOb6mJXd_UkZiB56w5SQ6pfqcjGtAG";
+const DISCORD_WEBHOOK = process.env.DISCORD_WEBHOOK;
+
+app.get("/", (req, res) => {
+    res.send("VA Discord Bridge is running.");
+});
 
 app.post("/webhook", async (req, res) => {
     const data = req.body;
 
-    // Alleen completed flights posten
-    if (data.event !== "flight_completed") {
-        return res.status(200).send("Ignored");
+    if (!data.flight) {
+        return res.status(200).send("No flight data");
     }
 
     const flight = data.flight;
@@ -39,7 +42,8 @@ app.post("/webhook", async (req, res) => {
         body: JSON.stringify({ embeds: [embed] })
     });
 
-    res.status(200).send("Posted");
+    res.status(200).send("Posted to Discord");
 });
 
-app.listen(3000, () => console.log("Server running"));
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log("Server running"));
